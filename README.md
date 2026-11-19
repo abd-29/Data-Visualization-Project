@@ -1,4 +1,4 @@
-# PLEASE DON'T GRADE ME 🎓
+# DATA VISUALIZATION PROJECT 🎓
 
 An interactive R Shiny dashboard that gets nervous when a professor grades it.
 

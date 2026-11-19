@@ -1,4 +1,4 @@
-# PLEASE DON'T GRADE ME — deployable Shiny application.
+# DATA VISUALIZATION PROJECT — deployable Shiny application.
 # Place your animated GIFs in www/ (see README.md) and deploy the entire folder.
 
 library(shiny)
@@ -26,7 +26,7 @@ mascot <- function(scene, class_name = "") {
 logo <- tags$div(
   class = "brand",
   tags$img(src = "graduation.svg", class = "brand-icon", alt = ""),
-  tags$span("PLEASE DON'T GRADE ME")
+  tags$span("BRETAGNE SUD UNIVERSITY")
 )
 
 primary_btn <- function(id, text, icon = NULL, class_name = "") {
@@ -100,7 +100,7 @@ ui <- fluidPage(
     tags$meta(charset = "UTF-8"),
     tags$meta(name = "viewport", content = "width=device-width, initial-scale=1"),
     tags$meta(name = "theme-color", content = "#0c1728"),
-    tags$title("PLEASE DON'T GRADE ME — Master Science des Données"),
+    tags$title("DATA VISUALIZATION PROJECT — Master Science des Données"),
     tags$link(rel = "stylesheet", type = "text/css", href = "style.css"),
     tags$script(src = "app.js")
   ),
@@ -252,7 +252,7 @@ ui <- fluidPage(
     )
   ),
   tags$div(id = "global-toast", class = "global-toast", role = "status", `aria-live` = "polite"),
-  tags$footer(class = "site-footer", "PLEASE DON'T GRADE ME · Projet universitaire de Data Visualisation · Données fictives")
+  tags$footer(class = "site-footer", "DATA VISUALIZATION PROJECT · Données fictives")
 )
 
 server <- function(input, output, session) {

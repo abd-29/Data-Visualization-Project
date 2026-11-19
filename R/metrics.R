@@ -1,4 +1,4 @@
-# Statistical model for PLEASE DON'T GRADE ME.
+# Statistical model for DATA VISUALIZATION PROJECT.
 # All values are fictitious. Only the Data Visualisation grade is variable.
 
 FIXED_SUBJECTS <- data.frame(
