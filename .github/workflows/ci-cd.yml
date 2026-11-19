@@ -1,0 +1,103 @@
+
+name: Shiny CI/CD
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+          use-public-rspm: true
+
+      - name: Install R dependencies
+        run: |
+          Rscript -e 'install.packages(c("shiny", "rsconnect"))'
+
+      - name: Check R syntax
+        run: |
+          Rscript -e 'invisible(lapply(c("app.R", "R/metrics.R", "tests/test_logic.R"), parse))'
+
+      - name: Check JavaScript syntax
+        run: node --check www/app.js
+
+      - name: Run statistical tests
+        run: Rscript tests/test_logic.R
+
+      - name: Check required assets
+        run: |
+          test -f www/style.css
+          test -f www/app.js
+          test -f www/mascot-404.svg
+          test -f www/mascot-403.svg
+          test -f www/mascot-dashboard.svg
+
+      - name: Test Shiny startup
+        shell: bash
+        run: |
+          Rscript -e 'shiny::runApp(".", host="127.0.0.1", port=3838, launch.browser=FALSE)' > shiny.log 2>&1 &
+          PID=$!
+          trap 'kill "$PID" 2>/dev/null || true' EXIT
+
+          for i in {1..20}; do
+            if curl -fsS --max-time 5 http://127.0.0.1:3838/ -o page.html; then
+              grep -q "page-home" page.html
+              echo "Shiny startup OK"
+              exit 0
+            fi
+            sleep 2
+          done
+
+          cat shiny.log
+          exit 1
+
+      - name: Deploy to shinyapps.io
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          SHINYAPPS_ACCOUNT: ${{ secrets.SHINYAPPS_ACCOUNT }}
+          SHINYAPPS_TOKEN: ${{ secrets.SHINYAPPS_TOKEN }}
+          SHINYAPPS_SECRET: ${{ secrets.SHINYAPPS_SECRET }}
+        shell: Rscript {0}
+        run: |
+          credentials <- Sys.getenv(c(
+            "SHINYAPPS_ACCOUNT",
+            "SHINYAPPS_TOKEN",
+            "SHINYAPPS_SECRET"
+          ))
+
+          stopifnot(all(nzchar(credentials)))
+
+          rsconnect::setAccountInfo(
+            name = Sys.getenv("SHINYAPPS_ACCOUNT"),
+            token = Sys.getenv("SHINYAPPS_TOKEN"),
+            secret = Sys.getenv("SHINYAPPS_SECRET")
+          )
+
+          app_files <- c(
+            "app.R",
+            "R/metrics.R",
+            list.files("www", recursive = TRUE, full.names = TRUE)
+          )
+
+          rsconnect::deployApp(
+            appDir = ".",
+            appFiles = app_files,
+            appName = "please-dont-grade-me",
+            appTitle = "PLEASE DON'T GRADE ME",
+            account = Sys.getenv("SHINYAPPS_ACCOUNT"),
+            server = "shinyapps.io",
+            forceUpdate = TRUE,
+            launch.browser = FALSE
+          )
