@@ -40,7 +40,7 @@ jobs:
         run: |
           test -f www/style.css
           test -f www/app.js
-          test -f www/mascot-404.svg
+          test -f www/mascot-404.gif
           test -f www/mascot-403.svg
           test -f www/mascot-dashboard.svg
 
